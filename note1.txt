@@ -1,0 +1,21 @@
+
+
+when use jquery method, need to wrap jquery object to target.
+
+fix print repeating header
+thead {
+        display: table-row-group; 
+    }
+
+Restore deleted files:
+git rev-list -n 1 HEAD -- <file_path> //relative file path
+git checkout <deleting_commit>^ -- <file_path>
+
+To run gulp, first go to gulpfile.js directory
+
+angular ng-repeat can work with indexOf object, don't pass $index to controller because filter can change the $index, instead, pass the object
+
+
+
+	
+	
