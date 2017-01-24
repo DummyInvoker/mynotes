@@ -15,7 +15,129 @@ To run gulp, first go to gulpfile.js directory
 
 angular ng-repeat can work with indexOf object, don't pass $index to controller because filter can change the $index, instead, pass the object
 
+========sass: Mixins and Functions========
+
+@mixin my-padding-mixin($some-number) {
+  padding: $some-number;
+}
+
+use:
+
+.my-module {
+  @include my-padding-mixin(10px);
+}
+
+functions help you write more readable and DRY Sass by letting you move your reusable logic out of specific declarations and even out of your mixins.
+output from a function is a single value	
+Pro tip: Use functions when you need to calculate a value that may be reused somewhere else.	
+
+@function calc-percent($target, $container) {
+  @return ($target / $container) * 100%;
+}
+@function cp($target, $container) {
+  @return calc-percent($target, $container);
+}
+
+use:
+
+.my-module {
+  width: cp(650px, 1000px);
+}
+
+=========Angular: Copy vs. Extend vs. Merge=============
+
+Copy
+angular.copy is a deep copy.
+
+var o1 = { name: 'David', age: 26, skill: {} };
+var o2 = angular.copy(o1);
+
+console.log(o2);
+// Output: { name: 'David', age: 26, skill: {} }
+
+console.log(o1 === o2);
+// Output: false
+
+console.log(o1.skill === o2.skill);
+// Output: false
+// o2.skill is a copy of o1.skill. They don't point to the same skill object.
 
 
-	
-	
+Extend
+angular.extend(dst, src1, src2, ...) is to shallow copy the properties of the source objects from right to left, all the way to the destination object.
+
+var src1 = { name: 'David', age: 30 }; // source 1
+var src2 = { age: 26, skill: {} }; // source 2
+var dst = {}; // destination
+
+console.log(angular.extend(dst, src1, src2));
+// Output: { name: 'David', age: 26, skill: {} }
+
+console.log(src2.skill === dst.skill);
+// Output: true
+// src2 and dst share the same skill object due to shallow copy.
+
+
+Merge
+angular.merge is an Angular 1.4+ API that is to deep (recursively) copy the properties of the source objects to the destination object.
+
+Here we use the above example, and replace angular.extend with angular.merge:
+
+var src1 = { name: 'David', age: 30 };
+var src2 = { age: 26, skill: {} };
+var dst = {};
+
+console.log(angular.merge(dst, src1, src2));
+// Output: { name: 'David', age: 26, skill: {} }
+// It seems to the same result as the previous example's, however, ...
+
+console.log(src2.skill === dst.skill);
+// Output: false
+// src2.skill and dst.skill point to different skill objects due to deep copy.
+
+
+More Extend vs. Merge
+angular.copy is simply to clone an object. angular.extend and angular.merge are more interesting. Here is another set of comparing examples.
+
+angular.extend – shallow copy:
+
+var src1 = { skill: { name: 'Java', experience: 20, certified: true } };
+var src2 = { skill: { name: 'JavaScript', experience: 10 } };
+var dst = {};
+
+console.log(angular.extend(dst, src1, src2));
+// Output: { skill: { name: 'JavaScript', experience: 10 } }
+certified: true is lost. Because of shallow copy, the skill property is assigned from src2 to src1 without recursively copying the individual properties inside the skill value.
+
+The same code yields totally different result if we replace extend with merge:
+
+angular.merge – deep (recursive) copy:
+
+var src1 = { skill: { name: 'Java', experience: 20, certified: true } };
+var src2 = { skill: { name: 'JavaScript', experience: 10 } };
+var dst = {};
+
+console.log(angular.merge(dst, src1, src2));
+// Output: { skill: { name: 'JavaScript', experience: 10, certified: true } }
+With angular.merge, properties are recursively copied from src2 to src1, so certified: true is reserved.
+
+
+
+User and Default Options
+angular.extend or angular.merge is often used to achieve user options overriding default options. Here is an example:
+
+function orderDrink(options) {
+
+  // Default options
+  var defaultOptions = { size: 'medium' };
+
+  // Supplied options override default options
+  var opts = angular.extend({}, defaultOptions, options);
+
+  console.log(opts.size);
+}
+
+orderDrink({ size: 'large' }); // Output: 'large'
+orderDrink(); // Output: 'medium'
+For more complicate case that has nested options, you might want to use angular.merge for its deep copy.
+
